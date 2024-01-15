@@ -5,19 +5,26 @@ import {
   PerspectiveCamera,
   BoxGeometry,
   MeshBasicMaterial,
-  Mesh
+  Mesh,
+  AxesHelper,
+  GridHelper
 } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import { isNeedResizeRenderer } from 'components/utils/viewport';
 
-const Basic = () => {
+const ControlsOrbitControls = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const isNeedRenderAnimation = useRef<boolean>(false);
 
   const render = (
     scene: Scene,
     camera: PerspectiveCamera,
     renderer: WebGLRenderer
   ) => {
+    isNeedRenderAnimation.current = false;
+
     if (isNeedResizeRenderer(renderer)) {
       const { innerWidth, innerHeight } = window;
 
@@ -28,6 +35,20 @@ const Basic = () => {
     renderer.render(scene, camera);
   };
 
+  const requestRenderAnimation = (
+    scene: Scene,
+    camera: PerspectiveCamera,
+    renderer: WebGLRenderer
+  ) => {
+    if (!isNeedRenderAnimation.current) {
+      isNeedRenderAnimation.current = true;
+
+      requestAnimationFrame(() => {
+        render(scene, camera, renderer);
+      });
+    }
+  };
+
   useEffect(() => {
     if (!!canvasRef.current) {
       const renderer = new WebGLRenderer({
@@ -35,10 +56,9 @@ const Basic = () => {
         antialias: true
       });
 
-      const { innerWidth, innerHeight, devicePixelRatio } = window;
+      const { innerWidth, innerHeight } = window;
 
       renderer.setSize(innerWidth, innerHeight);
-      renderer.setPixelRatio(devicePixelRatio > 1 ? 2 : 1);
 
       const scene = new Scene();
 
@@ -49,10 +69,23 @@ const Basic = () => {
         1000
       );
 
-      camera.position.set(1, 2, 5);
+      camera.position.set(2, 3, 7);
 
       scene.add(camera);
 
+      // AxesHelper
+      const axesHelper = new AxesHelper(3);
+      scene.add(axesHelper);
+
+      // GridHelper
+      const gridHelper = new GridHelper();
+      scene.add(gridHelper);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.maxDistance = 30;
+      controls.minDistance = 1;
+
+      // Mesh
       const geometry = new BoxGeometry(1, 1, 1);
       const material = new MeshBasicMaterial({
         color: '#ff0000'
@@ -61,12 +94,20 @@ const Basic = () => {
       const mesh = new Mesh(geometry, material);
       scene.add(mesh);
 
+      camera.lookAt(mesh.position);
+
       renderer.render(scene, camera);
 
       window.addEventListener('resize', () => {
         render(scene, camera, renderer);
       });
+
+      controls.addEventListener('change', () => {
+        requestRenderAnimation(scene, camera, renderer);
+      });
     }
+
+    // eslint-disable-next-line
   }, []);
 
   return (
@@ -76,4 +117,4 @@ const Basic = () => {
   );
 };
 
-export default Basic;
+export default ControlsOrbitControls;

@@ -4,7 +4,15 @@ const Home = () => {
   return (
     <div>
       <nav>
-        <Link to='/basic'>Basic</Link>
+        <ul>
+          <li>
+            <Link to='/basic'>Basic</Link>
+          </li>
+
+          <li>
+            <Link to='/controls/orbitControls'>OrbitControls</Link>
+          </li>
+        </ul>
       </nav>
     </div>
   );
