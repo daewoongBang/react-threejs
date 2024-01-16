@@ -12,6 +12,10 @@ const Home = () => {
           <li>
             <Link to='/controls/orbitControls'>OrbitControls</Link>
           </li>
+
+          <li>
+            <Link to='/controls/transformControls'>TransformControls</Link>
+          </li>
         </ul>
       </nav>
     </div>

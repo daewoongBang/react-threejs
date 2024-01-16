@@ -6,14 +6,14 @@ import {
   BoxGeometry,
   MeshBasicMaterial,
   Mesh,
-  AxesHelper,
   GridHelper
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 
 import { isNeedResizeRenderer } from 'components/utils/viewport';
 
-const ControlsOrbitControls = () => {
+const ControlsTransformControls = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const isNeedRenderAnimation = useRef<boolean>(false);
@@ -77,17 +77,13 @@ const ControlsOrbitControls = () => {
 
       scene.add(camera);
 
-      // AxesHelper
-      const axesHelper = new AxesHelper(3);
-      scene.add(axesHelper);
-
       // GridHelper
       const gridHelper = new GridHelper();
       scene.add(gridHelper);
 
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.maxDistance = 30;
-      controls.minDistance = 1;
+      const orbitControls = new OrbitControls(camera, renderer.domElement);
+      orbitControls.maxDistance = 30;
+      orbitControls.minDistance = 1;
 
       // Mesh
       const geometry = new BoxGeometry(1, 1, 1);
@@ -98,16 +94,47 @@ const ControlsOrbitControls = () => {
       const mesh = new Mesh(geometry, material);
       scene.add(mesh);
 
+      const transformControls = new TransformControls(
+        camera,
+        renderer.domElement
+      );
+      transformControls.attach(mesh);
+      scene.add(transformControls);
+
       camera.lookAt(mesh.position);
 
       renderer.render(scene, camera);
 
       window.addEventListener('resize', () => {
-        render(scene, camera, renderer, controls);
+        render(scene, camera, renderer, orbitControls);
       });
 
-      controls.addEventListener('change', () => {
-        requestRenderAnimation(scene, camera, renderer, controls);
+      orbitControls.addEventListener('change', () => {
+        requestRenderAnimation(scene, camera, renderer, orbitControls);
+      });
+
+      transformControls.addEventListener('change', () => {
+        requestRenderAnimation(scene, camera, renderer, orbitControls);
+      });
+
+      transformControls.addEventListener('dragging-changed', event => {
+        orbitControls.enabled = !event.value;
+      });
+
+      window.addEventListener('keydown', (event: KeyboardEvent) => {
+        switch (event.code) {
+          case 'KeyT':
+            transformControls.setMode('translate');
+            break;
+
+          case 'KeyR':
+            transformControls.setMode('rotate');
+            break;
+
+          case 'KeyS':
+            transformControls.setMode('scale');
+            break;
+        }
       });
     }
 
@@ -121,4 +148,4 @@ const ControlsOrbitControls = () => {
   );
 };
 
-export default ControlsOrbitControls;
+export default ControlsTransformControls;
